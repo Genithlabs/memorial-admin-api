@@ -1,0 +1,27 @@
+version: '3.7'
+
+services:
+    ubuntu:
+        container_name: nginx_php81
+        build:
+            dockerfile: Dockerfile
+        stdin_open: true
+        tty: true
+        volumes:
+            - .:/var/www/html
+        ports:
+            - "80:80"
+            - "443:443"
+    db:
+        image: mariadb:latest
+        container_name: mariadb
+        restart: always
+        environment:
+            MYSQL_DATABASE: memorial
+            MYSQL_USER: memorial
+            MYSQL_PASSWORD: memorial
+            MYSQL_ROOT_PASSWORD: memorial
+        volumes:
+            - ./mariadb_data:/var/lib/mysql    
+        ports:
+            - "3306:3306"
