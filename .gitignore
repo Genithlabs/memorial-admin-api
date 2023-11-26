@@ -16,3 +16,8 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# for docker
+
+# mariadb data
+/mariadb_data
