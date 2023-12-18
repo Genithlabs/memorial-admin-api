@@ -40,7 +40,7 @@ class AuthController extends Controller
 
         $credentials = array(
             'email' => $data['email'],
-            'user_password' => $data['user_password']
+            'password' => $data['user_password']
         );
 
         if (!Auth::attempt($credentials)) {
@@ -64,15 +64,14 @@ class AuthController extends Controller
 
         // return $response;
 
-        $response = Http::asForm()->post('http://127.0.0.1:8000/oauth/token', [
+        $response = Http::asForm()->post('http://localhost:8000/oauth/token', [
             'grant_type' => 'password',
             'client_id' => $client->id,
             'client_secret' => $client->secret,
-            'username' => Auth::user()['id'],
+            'username' => $data['email'],
             'password' => $data['user_password'],
             'scope' => '*'
         ]);
-
         // app()->handle();
 
         // $response = Http::asForm()->post($tokenRoute, [
