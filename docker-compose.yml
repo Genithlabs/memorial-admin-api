@@ -10,8 +10,13 @@ services:
         volumes:
             - .:/var/www/html
         ports:
-            - "80:80"
+            - "8000:8000"   # 외부 8000 포트로 컨테이너 8000 포트가 매핑됨
             - "443:443"
+        expose:
+            - "8000"
+        # networks:
+        #     - memorial
+
     db:
         image: mariadb:latest
         container_name: mariadb
@@ -22,6 +27,11 @@ services:
             MYSQL_PASSWORD: memorial
             MYSQL_ROOT_PASSWORD: memorial
         volumes:
-            - ./mariadb_data:/var/lib/mysql    
+            - ./mariadb_data:/var/lib/mysql
         ports:
             - "3306:3306"
+        # networks:
+        #     - memorial
+
+# networks:
+#     memorial
