@@ -22,6 +22,6 @@ services:
             MYSQL_PASSWORD: memorial
             MYSQL_ROOT_PASSWORD: memorial
         volumes:
-            - ./mariadb_data:/var/lib/mysql    
+            - ./mariadb_data:/var/lib/mysql
         ports:
             - "3306:3306"
