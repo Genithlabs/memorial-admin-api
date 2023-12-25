@@ -24,7 +24,6 @@ RUN apt-get update -y && apt-get install -y php8.1 \
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-#Mine    
 
 #Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -39,7 +38,5 @@ COPY ./conf/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 80
 EXPOSE 443
-#EXPOSE 22
-#EXPOSE 9000
 
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
