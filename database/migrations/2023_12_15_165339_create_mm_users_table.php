@@ -17,6 +17,7 @@ return new class extends Migration
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
             $table->bigIncrements('id');
+            $table->string('user_id', 50)->unique()->comment('유저아이디');
             $table->string('email', 100)->unique()->default('')->comment('이메일');
             $table->string('user_name', 50)->default('')->comment('회원 이름');
             $table->string('user_password', 255)->default('')->comment('비밀번호');
