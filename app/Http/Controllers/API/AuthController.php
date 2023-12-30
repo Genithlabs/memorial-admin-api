@@ -17,7 +17,8 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         // 유효성 체크
-        $valid = validator($request->only('email', 'user_name', 'user_password'), [
+        $valid = validator($request->only('user_id', 'email', 'user_name', 'user_password'), [
+            'user_id' => 'required|string|max:50|unique:mm_users',
             'email' => 'required|string|email|max:100|unique:mm_users',
             'user_name' => 'required|string|max:50',
             'user_password' => 'required|string|min:6|max:255'
@@ -28,9 +29,10 @@ class AuthController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $data = request()->only('email', 'user_name', 'user_password');
+        $data = request()->only('user_id', 'email', 'user_name', 'user_password');
 
         $user = User::create([
+            'user_id' => $data['user_id'],
             'email' => $data['email'],
             'user_name' => $data['user_name'],
             'user_password' => bcrypt($data['user_password'])
@@ -43,7 +45,7 @@ class AuthController extends Controller
             'grant_type' => 'password',
             'client_id' => $client->id,
             'client_secret' => $client->secret,
-            'username' => $data['email'],
+            'username' => $data['user_id'],
             'password' => $data['user_password'],
             'scope' => '*'
         ]);
