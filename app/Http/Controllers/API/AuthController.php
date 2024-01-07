@@ -107,4 +107,36 @@ class AuthController extends Controller
             ]);
         }
     }
+
+    /* 아이디 찾기 */
+    public function findId(Request $request) {
+        // 유효성 체크
+        $valid = validator($request->only('email', 'user_name'), [
+            'email' => 'required|string|email|max:100',
+            'user_name' => 'required|string|max:50'
+        ]);
+        if ($valid->fails()) {
+            return response()->json([
+                'error' => $valid->errors()->all()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $data = request()->only('email', 'user_name');
+
+        $user = User::where('email', $data['email'])
+                    ->where('user_name', $data['user_name'])
+                    ->first();
+
+        if ($user == null) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '가입된 사용자가 아닙니다.'
+            ]);
+        } else {
+            return response()->json([
+                'result' => 'sucess',
+                'user_id' => $user['user_id']
+            ]);
+        }
+    }
 }
