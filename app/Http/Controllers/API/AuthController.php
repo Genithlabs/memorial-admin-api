@@ -9,7 +9,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\Client;
 use Illuminate\Support\Facades\Http;
-use Symfony\Component\HttpFoundation\Response as HttpFoundationResponse;
+use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
 {
@@ -136,6 +136,48 @@ class AuthController extends Controller
             return response()->json([
                 'result' => 'sucess',
                 'user_id' => $user['user_id']
+            ]);
+        }
+    }
+
+    public function resetPassword(Request $request) {
+        // 유효성 체크
+        $valid = validator($request->only('user_id', 'user_name', 'email'), [
+            'user_id' => 'required|string|max:50',
+            'user_name' => 'required|string|max:50',
+            'email' => 'required|string|email|max:100'
+        ]);
+        if ($valid->fails()) {
+            return response()->json([
+                'error' => $valid->errors()->all()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = User::where('user_id', $request->user_id)
+                    ->where('user_name', $request->user_name)
+                    ->where('email', $request->email)
+                    ->first();
+
+        if ($user == null) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '가입된 사용자가 아닙니다.'
+            ]);
+        }
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        if ($status == 'passwords.sent') {
+            return response()->json([
+                'result' => 'success',
+                'message' => '메일이 발송되었습니다.'
+            ]);
+        } else {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '메일 발송에 실패하였습니다.'
             ]);
         }
     }
