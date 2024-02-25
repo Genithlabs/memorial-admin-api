@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\PasswordReset;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -140,7 +141,7 @@ class AuthController extends Controller
         }
     }
 
-    public function resetPassword(Request $request) {
+    public function forgotPassword(Request $request) {
         // 유효성 체크
         $valid = validator($request->only('user_id', 'user_name', 'email'), [
             'user_id' => 'required|string|max:50',
@@ -168,6 +169,12 @@ class AuthController extends Controller
         $status = Password::sendResetLink(
             $request->only('email')
         );
+
+        PasswordReset::where('email', $request->email)
+            ->update([
+                'user_id' => $request->user_id,
+                'user_name' => $request->user_name
+            ]);
 
         if ($status == 'passwords.sent') {
             return response()->json([
