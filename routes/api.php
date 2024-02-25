@@ -19,5 +19,5 @@ Route::prefix('/user')->group(function() {
     Route::post('register', [AuthController::class, 'register'])->name('user.register');
     Route::post('login', [AuthController::class, 'login'])->name('user.login');
     Route::post('findId', [AuthController::class, 'findId'])->name('user.findId');
-    Route::post('reset_password', [AuthController::class, 'resetPassword'])->name('user.resetPassword');
+    Route::post('forgot_password', [AuthController::class, 'forgotPassword'])->name('user.forgetPassword');
 });
