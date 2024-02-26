@@ -14,8 +14,8 @@ return new class extends Migration
     public function up()
     {
         Schema::table('password_resets', function (Blueprint $table) {
-            $table->string('user_id', 50)->comment('유저아이디')->after('email');
-            $table->string('user_name', 50)->default('')->comment('회원 이름')->after('user_id');
+            $table->string('user_id', 50)->comment('유저아이디')->nullable()->after('email');
+            $table->string('user_name', 50)->default('')->nullable()->comment('회원 이름')->after('user_id');
         });
     }
 
