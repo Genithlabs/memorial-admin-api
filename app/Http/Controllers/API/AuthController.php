@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\Client;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -185,6 +187,41 @@ class AuthController extends Controller
             return response()->json([
                 'result' => 'fail',
                 'message' => '메일 발송에 실패하였습니다.'
+            ]);
+        }
+    }
+
+    public function resetPassword(Request $request) {
+        $valid = validator($request->only('email', 'password', 'password_confirmation', 'token'), [
+            'email' => 'required|string|email|max:100',
+            'password' => 'required|confirmed',
+            'token' => 'required'
+        ]);
+        if ($valid->fails()) {
+            return response()->json([
+                'error' => $valid->errors()->all()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user) use ($request) {
+                $user->forceFill([
+                    'user_password' => Hash::make($request->password),
+                    'remember_token' => Str::random(60),
+                ])->save();
+            }
+        );
+
+        if ($status == Password::PASSWORD_RESET) {
+            return response()->json([
+                'result' => 'success',
+                'message' => '비밀변호가 변경되었습니다.'
+            ]);
+        } else {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '비밀번호 변경에 실패하였습니다.['.$status.']'
             ]);
         }
     }
