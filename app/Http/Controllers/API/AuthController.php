@@ -40,7 +40,7 @@ class AuthController extends Controller
         ]);
 
         $client = Client::where('password_client', 1)->first();
-        $tokenRoute = route('passport.token');
+        $tokenRoute = env('APP_URL').route('passport.token', absolute: false);
 
         $response = Http::asForm()->post($tokenRoute, [
             'grant_type' => 'password',
@@ -88,7 +88,7 @@ class AuthController extends Controller
         }
 
         $client = Client::where('password_client', 1)->first();
-        $tokenRoute = route('passport.token');
+        $tokenRoute = env('APP_URL').route('passport.token', absolute: false);
 
         $response = Http::asForm()->post($tokenRoute, [
             'grant_type' => 'password',
