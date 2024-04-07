@@ -26,4 +26,5 @@ Route::prefix('/user')->group(function() {
 
 Route::middleware('auth:api')->prefix('memorial')->name('memorial.')->group(function() {
     Route::post('/register', [MemorialController::class, 'register'])->name('register');
+    Route::post('/upload', [MemorialController::class, 'upload'])->name('upload');
 });
