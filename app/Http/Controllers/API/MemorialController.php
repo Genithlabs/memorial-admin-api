@@ -104,7 +104,7 @@ class MemorialController extends Controller
                 Storage::disk('s3')->put($bgmPathFileName, file_get_contents($bgm_url));
 
                 $bgmAttachment = new Attachment();
-                $bgmAttachment->file_path = $this->S3_PATH_PROFILE;
+                $bgmAttachment->file_path = $this->S3_PATH_BGM;
                 $bgmAttachment->file_name = $fileName;
                 $bgmAttachment->save();
 
@@ -161,6 +161,109 @@ class MemorialController extends Controller
             return response()->json([
                 'result' => 'fail',
                 'message' => '업로드가 실패하였습니다. ['.$e->getMessage().']'
+            ]);
+        }
+    }
+
+    public function edit(Request $request, $id) {
+        // 유효성 체크
+        $memorial = Memorial::where('id', $id)->first();
+        if (is_null($memorial)) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '존재하지 않는 기념관입니다.'
+            ]);
+        }
+
+        $valid = validator($request->only('user_name', 'birth_start', 'birth_end', 'profile'), [
+            'user_name' => 'required|string|max:50',
+            'birth_start' => 'required|sometimes|date_format:Y-m-d',
+            'birth_end' => 'sometimes|date_format:Y-m-d',
+            'profile' => 'required'
+        ]);
+        if ($valid->fails()) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => $valid->errors()->all()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $data = request()->only('user_name', 'birth_start', 'birth_end', 'career', 'profile', 'bgm');
+
+        try {
+            DB::beginTransaction();
+
+            $memorial = Memorial::where('id', $id)->first();
+
+            $updateColumn = [
+                'name' =>  $data['user_name'],
+                'birth_start' => $data['birth_start'],
+                'birth_end' => $data['birth_end'],
+                'career_contents' => $data['career']
+            ];
+
+            // 프로필 이미지 업로드
+            $profile_url = $request->file('profile');
+            $file = $request->file('profile')->getClientOriginalName();
+            $extension = pathinfo($file, PATHINFO_EXTENSION);
+            $lowerExtentsion = strtolower($extension);
+            $fileName = $memorial->id."_profile.".$lowerExtentsion;
+            $profilePathFileName = $this->S3_PATH_PROFILE.$fileName;
+
+            $exists = Storage::disk('s3')->exists($profilePathFileName);
+            if ($exists) {
+                Storage::disk('s3')->delete($profilePathFileName);
+            }
+            Storage::disk('s3')->put($profilePathFileName, file_get_contents($profile_url));
+
+            Attachment::where('id', $memorial->profile_attachment_id)->delete();
+
+            $profileAttachment = new Attachment();
+            $profileAttachment->file_path = $this->S3_PATH_PROFILE;
+            $profileAttachment->file_name = $fileName;
+            $profileAttachment->save();
+
+            $updateColumn['profile_attachment_id'] = $profileAttachment->id;
+
+            // BGM 업로드
+            $bgm_url = $request->file('bgm');
+            if ($bgm_url) {
+                $file = $request->file('bgm')->getClientOriginalName();
+                $extension = pathinfo($file, PATHINFO_EXTENSION);
+                $lowerExtentsion = strtolower($extension);
+                $fileName = $memorial->id."_bgm.".$lowerExtentsion;
+                $bgmPathFileName = $this->S3_PATH_BGM.$fileName;
+
+                $exists = Storage::disk('s3')->exists($bgmPathFileName);
+                if ($exists) {
+                    Storage::disk('s3')->delete($bgmPathFileName);
+                }
+                Storage::disk('s3')->put($bgmPathFileName, file_get_contents($bgm_url));
+
+                Attachment::where('id', $memorial->bgm_attachment_id)->delete();
+
+                $bgmAttachment = new Attachment();
+                $bgmAttachment->file_path = $this->S3_PATH_BGM;
+                $bgmAttachment->file_name = $fileName;
+                $bgmAttachment->save();
+
+                $updateColumn['bgm_attachment_id'] = $bgmAttachment->id;
+            }
+
+            Memorial::where('id', $id)->update($updateColumn);
+
+            DB::commit();
+
+            return response()->json([
+                'result' => 'success',
+                'message' => '기념관 수정에 성공하였습니다.'
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'result' => 'fail',
+                'message' => '기념관 수정에 실패하였습니다. ['.$e->getMessage().']'
             ]);
         }
     }
