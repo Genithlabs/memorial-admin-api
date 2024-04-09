@@ -17,10 +17,14 @@ class MemorialController extends Controller
 {
     private $S3_PATH_PROFILE;
     private $S3_PATH_BGM;
+    private $S3_PATH_CAREER_CONTENT_FILE;
+    private $S3_URL;
 
     public function __construct() {
         $this->S3_PATH_PROFILE = "/memorial/profile/";
         $this->S3_PATH_BGM = "/memorial/bgm/";
+        $this->S3_PATH_CAREER_CONTENT_FILE = "/memorial/career/";
+        $this->S3_URL = "https://foot-print-resources.s3.ap-northeast-2.amazonaws.com";
     }
 
     public function register(Request $request) {
@@ -120,6 +124,43 @@ class MemorialController extends Controller
             return response()->json([
                 'result' => 'fail',
                 'message' => '기념관 생성에 실패하였습니다. ['.$e->getMessage().']'
+            ]);
+        }
+    }
+
+    public function upload(Request $request) {
+        $valid = validator($request->only('career_contents_file'), [
+            'career_contents_file' => 'required'
+        ]);
+        if ($valid->fails()) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => $valid->errors()->all()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $data = request()->only('career_contents_file');
+
+        try {
+            // 생애 컨텐츠에 포함될 파일 업로드
+            $upload_file_url = $request->file('career_contents_file');
+            $file = $request->file('career_contents_file')->getClientOriginalName();
+            $extension = pathinfo($file, PATHINFO_EXTENSION);
+            $lowerExtentsion = strtolower($extension);
+            $randomString = random_int(1, 10000000);
+            $fileName = Auth::user()->user_id."_".$randomString.".".$lowerExtentsion;
+            $uploadPathFileName = $this->S3_PATH_CAREER_CONTENT_FILE.$fileName;
+            Storage::disk('s3')->put($uploadPathFileName, file_get_contents($upload_file_url));
+
+            return response()->json([
+                'result' => 'success',
+                'message' => '업로드가 성공하였습니다.',
+                'url' => $this->S3_URL.$uploadPathFileName
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '업로드가 실패하였습니다. ['.$e->getMessage().']'
             ]);
         }
     }
