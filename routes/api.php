@@ -28,4 +28,8 @@ Route::middleware('auth:api')->prefix('memorial')->name('memorial.')->group(func
     Route::post('/register', [MemorialController::class, 'register'])->name('register');
     Route::post('/upload', [MemorialController::class, 'upload'])->name('upload');
     Route::post('{id}/edit', [MemorialController::class, 'edit'])->name('edit');
+
+    Route::withoutMiddleware('auth:api')->group(function() {
+        Route::get('{id}/detail', [MemorialController::class, 'detail'])->name('detail');
+    });
 });
