@@ -267,4 +267,29 @@ class MemorialController extends Controller
             ]);
         }
     }
+
+    public function detail(Request $request, $id) {
+        if (is_null($id)) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '기념관 ID가 없습니다.'
+            ]);
+        }
+
+        $memorial = Memorial::with(['attachmentProfileImage', 'attachmentBgm'])
+            ->select('id', 'birth_start', 'birth_end', 'career_contents', 'is_open', 'profile_attachment_id', 'bgm_attachment_id', 'created_at', 'updated_at')
+            ->where('id', $id)->first();
+
+        if (is_null($memorial)) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '기념관 정보가 없습니다.'
+            ]);
+        }
+        return response()->json([
+            'result' => 'success',
+            'message' => '기념관 조회가 성공하였습니다.',
+            'data' => $memorial
+        ]);
+    }
 }
