@@ -20,4 +20,12 @@ class Memorial extends Model
     public function attachmentBgm() {
         return $this->hasOne(Attachment::class, 'id', 'bgm_attachment_id')->where('is_delete', 0);
     }
+
+    public function story() {
+        return $this->hasMany(Story::class, 'id', 'memorial_id');
+    }
+
+    public function visitComment() {
+        return $this->hasMany(VisitorComment::class, 'id', 'memorial_id');
+    }
 }
