@@ -116,7 +116,10 @@ class MemorialController extends Controller
 
             return response()->json([
                 'result' => 'success',
-                'message' => '기념관 생성에 성공하였습니다.'
+                'message' => '기념관 생성에 성공하였습니다.',
+                'data' => [
+                    'id' => $memorial->id
+                ]
             ]);
         } catch (Exception $e) {
             DB::rollBack();
