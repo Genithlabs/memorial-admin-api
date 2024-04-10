@@ -279,7 +279,7 @@ class MemorialController extends Controller
             ]);
         }
 
-        $memorial = Memorial::with(['attachmentProfileImage', 'attachmentBgm'])
+        $memorial = Memorial::with(['attachmentProfileImage', 'attachmentBgm', 'story', 'visitComment'])
             ->select('id', 'birth_start', 'birth_end', 'career_contents', 'is_open', 'profile_attachment_id', 'bgm_attachment_id', 'created_at', 'updated_at')
             ->where('id', $id)->first();
 
