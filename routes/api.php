@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\CommentController;
 use App\Http\Controllers\API\MemorialController;
 
 /*
@@ -32,4 +33,6 @@ Route::middleware('auth:api')->prefix('memorial')->name('memorial.')->group(func
     Route::withoutMiddleware('auth:api')->group(function() {
         Route::get('{id}/detail', [MemorialController::class, 'detail'])->name('detail');
     });
+
+    Route::post('{id}/comment/register', [CommentController::class, 'register'])->name('comment.register');
 });
