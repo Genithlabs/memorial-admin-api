@@ -25,7 +25,11 @@ class Memorial extends Model
         return $this->hasMany(Story::class, 'id', 'memorial_id');
     }
 
-    public function visitComment() {
-        return $this->hasMany(VisitorComment::class, 'id', 'memorial_id');
+    public function visitComments() {
+        return $this->hasMany(VisitorComment::class, 'memorial_id', 'id')
+            ->join('mm_users as user', 'mm_visitor_comments.user_id', 'user.id')
+            ->select('mm_visitor_comments.id', 'mm_visitor_comments.user_id', 'user.user_name', 'mm_visitor_comments.memorial_id', 'mm_visitor_comments.message', 'mm_visitor_comments.is_visible', 'mm_visitor_comments.created_at', 'mm_visitor_comments.updated_at')
+            ->where('mm_visitor_comments.is_visible', 1)
+            ->orderBy('mm_visitor_comments.created_at', 'desc');
     }
 }
