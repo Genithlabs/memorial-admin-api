@@ -10,4 +10,8 @@ class Story extends Model
     use HasFactory;
     protected $table = "mm_stories";
     public $timestamps = true;
+
+    public function attachment() {
+        return $this->hasOne(Attachment::class, 'id', 'attachment_id')->where('is_delete', 0);
+    }
 }
