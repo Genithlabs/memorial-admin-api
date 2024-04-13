@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Attachment;
 use App\Models\Memorial;
+use App\Models\VisitorComment;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -279,7 +280,7 @@ class MemorialController extends Controller
             ]);
         }
 
-        $memorial = Memorial::with(['attachmentProfileImage', 'attachmentBgm', 'story', 'visitComment'])
+        $memorial = Memorial::with(['attachmentProfileImage', 'attachmentBgm', 'story', 'visitComments'])
             ->select('id', 'birth_start', 'birth_end', 'career_contents', 'is_open', 'profile_attachment_id', 'bgm_attachment_id', 'created_at', 'updated_at')
             ->where('id', $id)->first();
 
