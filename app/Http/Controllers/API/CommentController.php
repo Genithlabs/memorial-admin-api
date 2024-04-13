@@ -71,4 +71,27 @@ class CommentController extends Controller
             'data' => $commentList
         ]);
     }
+
+    public function list(Request $request, $memorialId) {
+        // 유효성 체크
+        if (is_null($memorialId)) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '기념관 ID가 없습니다.'
+            ]);
+        }
+
+        // 모든 코멘트 목록을 리턴합니다.
+        $commentList = VisitorComment::join('mm_users as user', 'mm_visitor_comments.user_id', 'user.id')
+            ->select('mm_visitor_comments.id', 'mm_visitor_comments.user_id', 'user.user_name', 'mm_visitor_comments.memorial_id', 'mm_visitor_comments.message', 'mm_visitor_comments.is_visible', 'mm_visitor_comments.created_at', 'mm_visitor_comments.updated_at')
+            ->where('mm_visitor_comments.memorial_id', $memorialId)
+            ->where('mm_visitor_comments.is_visible', 1)->orderBy('mm_visitor_comments.created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'result' => 'success',
+            'message' => '코멘트 조회가 성공하였습니다.',
+            'data' => $commentList
+        ]);
+    }
 }
