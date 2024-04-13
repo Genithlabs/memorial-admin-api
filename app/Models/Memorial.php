@@ -22,7 +22,7 @@ class Memorial extends Model
     }
 
     public function story() {
-        return $this->hasMany(Story::class, 'id', 'memorial_id');
+        return $this->hasMany(Story::class, 'memorial_id', 'id')->where('is_visible', 1);
     }
 
     public function visitComments() {
