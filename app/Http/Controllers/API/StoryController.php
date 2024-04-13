@@ -96,8 +96,9 @@ class StoryController extends Controller
         }
 
         // 모든 스토리 목록을 리턴합니다.
-        $storyList = Story::join('mm_users as user', 'mm_stories.user_id', 'user.id')
-            ->select('mm_stories.id', 'mm_stories.user_id', 'user.user_name', 'mm_stories.memorial_id', 'mm_stories.title', 'mm_stories.message', 'mm_stories.is_visible', 'mm_stories.created_at', 'mm_stories.updated_at')
+        $storyList = Story::with('attachment')
+            ->join('mm_users as user', 'mm_stories.user_id', 'user.id')
+            ->select('mm_stories.id', 'mm_stories.user_id', 'user.user_name', 'mm_stories.memorial_id', 'mm_stories.title', 'mm_stories.message', 'mm_stories.attachment_id', 'mm_stories.is_visible', 'mm_stories.created_at', 'mm_stories.updated_at')
             ->where('mm_stories.memorial_id', $memorialId)
             ->where('mm_stories.user_id', $userId)
             ->where('mm_stories.is_visible', 1)->orderBy('mm_stories.created_at', 'desc')
