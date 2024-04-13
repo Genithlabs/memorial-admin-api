@@ -60,7 +60,7 @@ class MemorialController extends Controller
             $userId = Auth::user()->user_id;
 
             $memorial = new Memorial();
-            $memorial->user_id = $userId;
+            $memorial->user_id = $id;
             $memorial->name = $data['user_name'];
             $memorial->birth_start = $data['birth_start'];
             $memorial->birth_end = $data['birth_end'];
