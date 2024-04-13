@@ -296,4 +296,17 @@ class MemorialController extends Controller
             'data' => $memorial
         ]);
     }
+
+    public function view(Request $request) {
+        $userId = Auth::user()->id;
+
+        $memorial = Memorial::with(['attachmentProfileImage', 'attachmentBgm'])
+            ->where('user_id', $userId)->first();
+
+        return response()->json([
+            'result' => 'success',
+            'message' => '기념관 조회가 성공하였습니다.',
+            'data' => $memorial
+        ]);
+    }
 }
