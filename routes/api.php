@@ -32,6 +32,7 @@ Route::middleware('auth:api')->prefix('memorial')->name('memorial.')->group(func
 
     Route::withoutMiddleware('auth:api')->group(function() {
         Route::get('{id}/detail', [MemorialController::class, 'detail'])->name('detail');
+        Route::get('{id}/comments', [CommentController::class, 'list'])->name('comment.list');
     });
 
     Route::post('{id}/comment/register', [CommentController::class, 'register'])->name('comment.register');
