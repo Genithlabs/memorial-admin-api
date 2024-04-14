@@ -33,6 +33,7 @@ Route::middleware('auth:api')->prefix('memorial')->name('memorial.')->group(func
     Route::get('/view', [MemorialController::class, 'view'])->name('view');
 
     Route::withoutMiddleware('auth:api')->group(function() {
+        Route::get('index', [MemorialController::class, 'index'])->name('index');
         Route::get('{id}/detail', [MemorialController::class, 'detail'])->name('detail');
         Route::get('{id}/comments', [CommentController::class, 'list'])->name('comment.list');
         Route::get('{id}/stories', [StoryController::class, 'list'])->name('story.list');
