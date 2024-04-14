@@ -110,4 +110,28 @@ class StoryController extends Controller
             'data' => $storyList
         ]);
     }
+
+    public function list(Request $request, $memorialId) {
+        // 유효성 체크
+        if (is_null($memorialId)) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '기념관 ID가 없습니다.'
+            ]);
+        }
+
+        // 모든 스토리 목록을 리턴합니다.
+        $storyList = Story::with('attachment')
+            ->join('mm_users as user', 'mm_stories.user_id', 'user.id')
+            ->select('mm_stories.id', 'mm_stories.user_id', 'user.user_name', 'mm_stories.memorial_id', 'mm_stories.title', 'mm_stories.message', 'mm_stories.attachment_id', 'mm_stories.is_visible', 'mm_stories.created_at', 'mm_stories.updated_at')
+            ->where('mm_stories.memorial_id', $memorialId)
+            ->where('mm_stories.is_visible', 1)->orderBy('mm_stories.created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'result' => 'success',
+            'message' => '스토리 조회가 성공하였습니다.',
+            'data' => $storyList
+        ]);
+    }
 }
