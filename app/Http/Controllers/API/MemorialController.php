@@ -316,7 +316,7 @@ class MemorialController extends Controller
             ->select('mm_memorials.id', 'mm_memorials.user_id', 'user.user_name', 'mm_memorials.career_contents', 'mm_memorials.profile_attachment_id', 'mm_memorials.bgm_attachment_id')
             ->where('mm_memorials.is_open', 1)
             ->orderBy('mm_memorials.created_at', 'desc')
-            ->limit(3)->get();
+            ->limit(4)->get();
 
         return response()->json([
             'result' => 'success',
