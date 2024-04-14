@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CommentController;
 use App\Http\Controllers\API\MemorialController;
+use App\Http\Controllers\API\StoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,4 +37,5 @@ Route::middleware('auth:api')->prefix('memorial')->name('memorial.')->group(func
     });
 
     Route::post('{id}/comment/register', [CommentController::class, 'register'])->name('comment.register');
+    Route::post('{id}/story/register', [StoryController::class, 'register'])->name('story.register');
 });
