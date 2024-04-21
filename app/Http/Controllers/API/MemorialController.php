@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Validator;
 
 class MemorialController extends Controller
 {
@@ -30,7 +31,7 @@ class MemorialController extends Controller
 
     public function register(Request $request) {
         // 유효성 체크
-        $memorial = Memorial::where('user_id', Auth::user()->user_id)->first();
+        $memorial = Memorial::where('user_id', Auth::user()->id)->first();
         if (!is_null($memorial)) {
             return response()->json([
                 'result' => 'fail',
@@ -69,7 +70,6 @@ class MemorialController extends Controller
             DB::beginTransaction();
 
             $id = Auth::user()->id;
-            $userId = Auth::user()->user_id;
 
             $memorial = new Memorial();
             $memorial->user_id = $id;
@@ -169,7 +169,7 @@ class MemorialController extends Controller
             $extension = pathinfo($file, PATHINFO_EXTENSION);
             $lowerExtentsion = strtolower($extension);
             $randomString = random_int(1, 10000000);
-            $fileName = Auth::user()->user_id."_".$randomString.".".$lowerExtentsion;
+            $fileName = Auth::user()->id."_".$randomString.".".$lowerExtentsion;
             $uploadPathFileName = $this->S3_PATH_CAREER_CONTENT_FILE.$fileName;
             Storage::disk('s3')->put($uploadPathFileName, file_get_contents($upload_file_url));
 
