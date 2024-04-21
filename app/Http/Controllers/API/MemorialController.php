@@ -38,16 +38,28 @@ class MemorialController extends Controller
             ]);
         }
 
-        $valid = validator($request->only('user_name', 'birth_start', 'birth_end', 'profile'), [
-            'user_name' => 'required|string|max:50',
+        $validator = Validator::make($request->all(), [
+            'user_name' => 'required|max:50',
             'birth_start' => 'required|sometimes|date_format:Y-m-d',
             'birth_end' => 'sometimes|date_format:Y-m-d',
-            'profile' => 'required'
+            'profile' => 'required|mimes:jpeg,jpg,png|max:1024',
+            'bgm' => 'sometimes|mimes:mp3|max:4096',
+        ], [
+            'user_name.required' => '기념인 이름을 입력해 주세요',
+            'user_name.max' => '기념인 이름은 50자 이내로 입력해 주세요',
+            'birth_start.required' => '기념인 태어난 생년월일을 입력해 주세요',
+            'birth_end.sometimes' => '기념인 돌아간 생년월일을 입력해 주세요',
+            'profile.required' => '기념인 프로필 사진을 선택해 주세요',
+            'profile.mimes' => '기념인 프로필 사진은 jpg/jpeg/png 형식이여야 합니다',
+            'profile.max' => '기념인 프로필 사진은 1Mb 이하여야 합니다',
+            'bgm.mimes' => '기념관 배경 음악은 mp3 형식이여야 합니다',
+            'bgm.max' => '기념관 배경 음악은 4Mb 이하여야 합니다'
         ]);
-        if ($valid->fails()) {
+
+        if ($validator->fails()) {
             return response()->json([
                 'result' => 'fail',
-                'message' => $valid->errors()->all()
+                'message' => $validator->errors()->all()
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -133,13 +145,18 @@ class MemorialController extends Controller
     }
 
     public function upload(Request $request) {
-        $valid = validator($request->only('career_contents_file'), [
-            'career_contents_file' => 'required'
+        $validator = Validator::make($request->all(), [
+            'career_contents_file' => 'required|mimes:jpeg,jpg,png|max:1024'
+        ], [
+            'career_contents_file.required' => '이미지를 선택해 주세요',
+            'career_contents_file.mimes' => '이미지는 jpg/jpeg/png 형식이여야 합니다',
+            'career_contents_file.max' => '이미지는 1Mb 이하여야 합니다'
         ]);
-        if ($valid->fails()) {
+
+        if ($validator->fails()) {
             return response()->json([
                 'result' => 'fail',
-                'message' => $valid->errors()->all()
+                'message' => $validator->errors()->all()
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -178,6 +195,24 @@ class MemorialController extends Controller
                 'message' => '존재하지 않는 기념관입니다.'
             ]);
         }
+
+        $validator = Validator::make($request->all(), [
+            'user_name' => 'required|max:50',
+            'birth_start' => 'required|sometimes|date_format:Y-m-d',
+            'birth_end' => 'sometimes|date_format:Y-m-d',
+            'profile' => 'required|mimes:jpeg,jpg,png|max:1024',
+            'bgm' => 'sometimes|mimes:mp3|max:4096',
+        ], [
+            'user_name.required' => '기념인 이름을 입력해 주세요',
+            'user_name.max' => '기념인 이름은 50자 이내로 입력해 주세요',
+            'birth_start.required' => '기념인 태어난 생년월일을 입력해 주세요',
+            'birth_end.sometimes' => '기념인 돌아간 생년월일을 입력해 주세요',
+            'profile.required' => '기념인 프로필 사진을 선택해 주세요',
+            'profile.mimes' => '기념인 프로필 사진은 jpg/jpeg/png 형식이여야 합니다',
+            'profile.max' => '기념인 프로필 사진은 1Mb 이하여야 합니다',
+            'bgm.mimes' => '기념관 배경 음악은 mp3 형식이여야 합니다',
+            'bgm.max' => '기념관 배경 음악은 4Mb 이하여야 합니다'
+        ]);
 
         $valid = validator($request->only('user_name', 'birth_start', 'birth_end', 'profile'), [
             'user_name' => 'required|string|max:50',
