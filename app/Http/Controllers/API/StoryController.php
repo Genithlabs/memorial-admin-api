@@ -12,6 +12,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class StoryController extends Controller
 {
@@ -40,14 +41,21 @@ class StoryController extends Controller
             ]);
         }
 
-        $valid = validator($request->only('title', 'message', 'attachment'), [
+        $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
-            'message' => 'required'
+            'message' => 'required',
+            'attachment' => 'sometimes|max:4096'
+        ], [
+            'title.required' => '제목을 입력해 주세요',
+            'title.max' => '제목은 255자 이내로 입력해 주세요',
+            'message.required' => '스토리를 입력해 주세요',
+            'attachment.max' => '첨부파일은 4Mb 이하여야 합니다'
         ]);
-        if ($valid->fails()) {
+
+        if ($validator->fails()) {
             return response()->json([
                 'result' => 'fail',
-                'message' => $valid->errors()->all()
+                'message' => $validator->errors()->all()
             ], Response::HTTP_BAD_REQUEST);
         }
 
