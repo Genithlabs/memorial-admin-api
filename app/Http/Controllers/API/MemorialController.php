@@ -200,7 +200,7 @@ class MemorialController extends Controller
             'user_name' => 'required|max:50',
             'birth_start' => 'required|sometimes|date_format:Y-m-d',
             'birth_end' => 'sometimes|date_format:Y-m-d',
-            'profile' => 'required|mimes:jpeg,jpg,png|max:1024',
+            'profile' => 'sometimes|mimes:jpeg,jpg,png|max:1024',
             'bgm' => 'sometimes|mimes:mp3|max:4096',
         ], [
             'user_name.required' => '기념인 이름을 입력해 주세요',
@@ -214,16 +214,10 @@ class MemorialController extends Controller
             'bgm.max' => '기념관 배경 음악은 4Mb 이하여야 합니다'
         ]);
 
-        $valid = validator($request->only('user_name', 'birth_start', 'birth_end', 'profile'), [
-            'user_name' => 'required|string|max:50',
-            'birth_start' => 'required|sometimes|date_format:Y-m-d',
-            'birth_end' => 'sometimes|date_format:Y-m-d',
-            'profile' => 'required'
-        ]);
-        if ($valid->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'result' => 'fail',
-                'message' => $valid->errors()->all()
+                'message' => $validator->errors()->all()
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -243,26 +237,28 @@ class MemorialController extends Controller
 
             // 프로필 이미지 업로드
             $profile_url = $request->file('profile');
-            $file = $request->file('profile')->getClientOriginalName();
-            $extension = pathinfo($file, PATHINFO_EXTENSION);
-            $lowerExtentsion = strtolower($extension);
-            $fileName = $memorial->id."_profile.".$lowerExtentsion;
-            $profilePathFileName = $this->S3_PATH_PROFILE.$fileName;
+            if ($profile_url) {
+                $file = $request->file('profile')->getClientOriginalName();
+                $extension = pathinfo($file, PATHINFO_EXTENSION);
+                $lowerExtentsion = strtolower($extension);
+                $fileName = $memorial->id."_profile.".$lowerExtentsion;
+                $profilePathFileName = $this->S3_PATH_PROFILE.$fileName;
 
-            $exists = Storage::disk('s3')->exists($profilePathFileName);
-            if ($exists) {
-                Storage::disk('s3')->delete($profilePathFileName);
+                $exists = Storage::disk('s3')->exists($profilePathFileName);
+                if ($exists) {
+                    Storage::disk('s3')->delete($profilePathFileName);
+                }
+                Storage::disk('s3')->put($profilePathFileName, file_get_contents($profile_url));
+
+                Attachment::where('id', $memorial->profile_attachment_id)->delete();
+
+                $profileAttachment = new Attachment();
+                $profileAttachment->file_path = $this->S3_PATH_PROFILE;
+                $profileAttachment->file_name = $fileName;
+                $profileAttachment->save();
+
+                $updateColumn['profile_attachment_id'] = $profileAttachment->id;
             }
-            Storage::disk('s3')->put($profilePathFileName, file_get_contents($profile_url));
-
-            Attachment::where('id', $memorial->profile_attachment_id)->delete();
-
-            $profileAttachment = new Attachment();
-            $profileAttachment->file_path = $this->S3_PATH_PROFILE;
-            $profileAttachment->file_name = $fileName;
-            $profileAttachment->save();
-
-            $updateColumn['profile_attachment_id'] = $profileAttachment->id;
 
             // BGM 업로드
             $bgm_url = $request->file('bgm');
