@@ -73,25 +73,27 @@ class StoryController extends Controller
 
             // 첨부파일 업로드
             $attachment_url = $request->file('attachment');
-            $file = $request->file('attachment')->getClientOriginalName();
-            $extension = pathinfo($file, PATHINFO_EXTENSION);
-            $lowerExtentsion = strtolower($extension);
-            $fileName = $story->id.".".$lowerExtentsion;
-            $attachmentPathFileName = $this->S3_PATH_STORY_ATTACHMENT.$fileName;
+            if ($attachment_url) {
+                $file = $request->file('attachment')->getClientOriginalName();
+                $extension = pathinfo($file, PATHINFO_EXTENSION);
+                $lowerExtentsion = strtolower($extension);
+                $fileName = $story->id.".".$lowerExtentsion;
+                $attachmentPathFileName = $this->S3_PATH_STORY_ATTACHMENT.$fileName;
 
-            $exists = Storage::disk('s3')->exists($attachmentPathFileName);
-            if ($exists) {
-                Storage::disk('s3')->delete($attachmentPathFileName);
+                $exists = Storage::disk('s3')->exists($attachmentPathFileName);
+                if ($exists) {
+                    Storage::disk('s3')->delete($attachmentPathFileName);
+                }
+                Storage::disk('s3')->put($attachmentPathFileName, file_get_contents($attachment_url));
+
+                $attachment = new Attachment();
+                $attachment->file_path = $this->S3_PATH_STORY_ATTACHMENT;
+                $attachment->file_name = $fileName;
+                $attachment->save();
+
+                $story->attachment_id = $attachment->id;
+                $story->save();
             }
-            Storage::disk('s3')->put($attachmentPathFileName, file_get_contents($attachment_url));
-
-            $attachment = new Attachment();
-            $attachment->file_path = $this->S3_PATH_STORY_ATTACHMENT;
-            $attachment->file_name = $fileName;
-            $attachment->save();
-
-            $story->attachment_id = $attachment->id;
-            $story->save();
 
             DB::commit();
         } catch (Exception $e) {
