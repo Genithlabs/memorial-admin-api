@@ -35,7 +35,7 @@ class AuthServiceProvider extends ServiceProvider
 
         // 비밀번호 재설정 URL 변경
         ResetPassword::createUrlUsing(function (User $user, string $token) {
-            return env('APP_URL').'/reset-password/'.$token;
+            return env('APP_PASSWORD_RESET_URL').'/reset-password/'.$token;
         });
     }
 }
