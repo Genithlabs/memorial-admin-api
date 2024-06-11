@@ -73,7 +73,9 @@ class MemorialController extends Controller
             $memorial->user_id = $id;
             $memorial->name = $data['user_name'];
             $memorial->birth_start = $data['birth_start'];
-            $memorial->birth_end = $data['birth_end'];
+            if (isset($data['birth_end'])) {
+                $memorial->birth_end = $data['birth_end'];
+            }
             $memorial->career_contents = $data['career'];
             $memorial->save();
 
@@ -227,7 +229,7 @@ class MemorialController extends Controller
             $updateColumn = [
                 'name' =>  $data['user_name'],
                 'birth_start' => $data['birth_start'],
-                'birth_end' => $data['birth_end'],
+                'birth_end' => (isset($data['birth_end']) ? $data['birth_end'] : null),
                 'career_contents' => $data['career']
             ];
 
