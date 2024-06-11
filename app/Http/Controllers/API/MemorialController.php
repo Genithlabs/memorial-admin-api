@@ -42,14 +42,12 @@ class MemorialController extends Controller
         $validator = Validator::make($request->all(), [
             'user_name' => 'required|max:50',
             'birth_start' => 'required|sometimes|date_format:Y-m-d',
-            'birth_end' => 'sometimes|date_format:Y-m-d',
             'profile' => 'required|mimes:jpeg,jpg,png|max:1024',
             'bgm' => 'sometimes|mimes:mp3,mp4,mpa|max:4096',
         ], [
             'user_name.required' => '기념인 이름을 입력해 주세요',
             'user_name.max' => '기념인 이름은 50자 이내로 입력해 주세요',
             'birth_start.required' => '기념인 태어난 생년월일을 입력해 주세요',
-            'birth_end.sometimes' => '기념인 돌아간 생년월일을 입력해 주세요',
             'profile.required' => '기념인 프로필 사진을 선택해 주세요',
             'profile.mimes' => '기념인 프로필 사진은 jpg/jpeg/png 형식이여야 합니다',
             'profile.max' => '기념인 프로필 사진은 1Mb 이하여야 합니다',
@@ -199,14 +197,12 @@ class MemorialController extends Controller
         $validator = Validator::make($request->all(), [
             'user_name' => 'required|max:50',
             'birth_start' => 'required|sometimes|date_format:Y-m-d',
-            'birth_end' => 'sometimes|date_format:Y-m-d',
             'profile' => 'sometimes|mimes:jpeg,jpg,png|max:1024',
             'bgm' => 'sometimes|mimes:mp3,mp4,mpa|max:4096',
         ], [
             'user_name.required' => '기념인 이름을 입력해 주세요',
             'user_name.max' => '기념인 이름은 50자 이내로 입력해 주세요',
             'birth_start.required' => '기념인 태어난 생년월일을 입력해 주세요',
-            'birth_end.sometimes' => '기념인 돌아간 생년월일을 입력해 주세요',
             'profile.required' => '기념인 프로필 사진을 선택해 주세요',
             'profile.mimes' => '기념인 프로필 사진은 jpg/jpeg/png 형식이여야 합니다',
             'profile.max' => '기념인 프로필 사진은 1Mb 이하여야 합니다',
