@@ -311,7 +311,7 @@ class MemorialController extends Controller
 
         $memorial = Memorial::with(['attachmentProfileImage', 'attachmentBgm', 'story', 'visitComments'])
             ->join('mm_users as user', 'mm_memorials.user_id', 'user.id')
-            ->select('mm_memorials.id', 'user.user_name', 'mm_memorials.birth_start', 'mm_memorials.birth_end', 'mm_memorials.career_contents', 'mm_memorials.is_open', 'mm_memorials.profile_attachment_id', 'mm_memorials.bgm_attachment_id', 'mm_memorials.created_at', 'mm_memorials.updated_at')
+            ->select('mm_memorials.id', 'mm_memorials.name', 'mm_memorials.birth_start', 'mm_memorials.birth_end', 'mm_memorials.career_contents', 'mm_memorials.is_open', 'mm_memorials.profile_attachment_id', 'mm_memorials.bgm_attachment_id', 'mm_memorials.created_at', 'mm_memorials.updated_at')
             ->where('mm_memorials.id', $id)->first();
 
         if (is_null($memorial)) {
