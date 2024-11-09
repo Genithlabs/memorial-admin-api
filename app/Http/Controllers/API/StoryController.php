@@ -13,13 +13,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Cloudinary\Cloudinary;
 
 class StoryController extends Controller
 {
     private $S3_PATH_STORY_ATTACHMENT;
 
-    public function __construct() {
+    protected $cloudinary;
+
+    public function __construct(Cloudinary $cloudinary) {
         $this->S3_PATH_STORY_ATTACHMENT = "/memorial/story/";
+        $this->cloudinary = $cloudinary;
     }
 
     public function register(Request $request, $memorialId) {
@@ -44,12 +48,12 @@ class StoryController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'message' => 'required',
-            'attachment' => 'sometimes|max:4096'
+            'attachment' => 'sometimes|max:102400'
         ], [
             'title.required' => '제목을 입력해 주세요',
             'title.max' => '제목은 255자 이내로 입력해 주세요',
             'message.required' => '스토리를 입력해 주세요',
-            'attachment.max' => '첨부파일은 4Mb 이하여야 합니다'
+            'attachment.max' => '첨부파일은 100Mb 이하여야 합니다'
         ]);
 
         if ($validator->fails()) {
@@ -75,19 +79,34 @@ class StoryController extends Controller
             $attachment_url = $request->file('attachment');
             if ($attachment_url) {
                 $file = $request->file('attachment')->getClientOriginalName();
+                $mimeType = $attachment_url->getMimeType();
                 $extension = pathinfo($file, PATHINFO_EXTENSION);
                 $lowerExtentsion = strtolower($extension);
-                $fileName = $story->id.".".$lowerExtentsion;
-                $attachmentPathFileName = $this->S3_PATH_STORY_ATTACHMENT.$fileName;
+                $fileName = $story->id;
 
-                $exists = Storage::disk('s3')->exists($attachmentPathFileName);
-                if ($exists) {
-                    Storage::disk('s3')->delete($attachmentPathFileName);
+                if (str_starts_with($mimeType, 'image/')) {
+                    $resourceType = "image";
+                } elseif (str_starts_with($mimeType, 'video/')) {
+                    $resourceType = "video";
+                } else {
+                    throw new Exception("지원하지 않은 파일타입입니다.: " . $mimeType);
                 }
-                Storage::disk('s3')->put($attachmentPathFileName, file_get_contents($attachment_url));
+
+                $profileUploadResponse = $this->cloudinary->uploadApi()->upload($attachment_url->getRealPath(), $options = [
+                    'public_id' => $fileName,
+                    'asset_folder' => $this->S3_PATH_STORY_ATTACHMENT,
+                    'resource_type' => $resourceType,
+                    'use_filename' => true, // 원본 파일명을 public_id 로 사용함
+                ]);
+
+                $publicId = $profileUploadResponse['public_id'];
+                $version = $profileUploadResponse['version'];
+
+                $filePath = "/".env('CLOUDINARY_NAME')."/".$resourceType."/upload/v".$version."/";
+                $fileName = $publicId.".".$lowerExtentsion;
 
                 $attachment = new Attachment();
-                $attachment->file_path = $this->S3_PATH_STORY_ATTACHMENT;
+                $attachment->file_path = $filePath;
                 $attachment->file_name = $fileName;
                 $attachment->save();
 
