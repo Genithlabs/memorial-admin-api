@@ -163,11 +163,11 @@ class MemorialController extends Controller
 
     public function upload(Request $request) {
         $validator = Validator::make($request->all(), [
-            'career_contents_file' => 'required|mimes:jpeg,jpg,png|max:1024'
+            'career_contents_file' => 'required|mimes:jpeg,jpg,png|max:10240'
         ], [
             'career_contents_file.required' => '이미지를 선택해 주세요',
             'career_contents_file.mimes' => '이미지는 jpg/jpeg/png 형식이여야 합니다',
-            'career_contents_file.max' => '이미지는 1Mb 이하여야 합니다'
+            'career_contents_file.max' => '이미지는 10Mb 이하여야 합니다'
         ]);
 
         if ($validator->fails()) {
@@ -186,14 +186,26 @@ class MemorialController extends Controller
             $extension = pathinfo($file, PATHINFO_EXTENSION);
             $lowerExtentsion = strtolower($extension);
             $randomString = random_int(1, 10000000);
-            $fileName = Auth::user()->id."_".$randomString.".".$lowerExtentsion;
+            $fileName = Auth::user()->id."_".$randomString;
             $uploadPathFileName = $this->S3_PATH_CAREER_CONTENT_FILE.$fileName;
-            Storage::disk('s3')->put($uploadPathFileName, file_get_contents($upload_file_url));
+
+            $profileUploadResponse = $this->cloudinary->uploadApi()->upload($upload_file_url->getRealPath(), $options = [
+                'public_id' => $fileName,
+                'asset_folder' => $this->S3_PATH_CAREER_CONTENT_FILE,
+                'resource_type' => "image",
+                'use_filename' => true, // 원본 파일명을 public_id 로 사용함
+            ]);
+
+            if (env('CLOUDINARY_SECURE') == true) {
+                $responseUrl = $profileUploadResponse['secure_url'];
+            } else {
+                $responseUrl = $profileUploadResponse['url'];
+            }
 
             return response()->json([
                 'result' => 'success',
                 'message' => '업로드가 성공하였습니다.',
-                'url' => $this->S3_URL.$uploadPathFileName
+                'url' => $responseUrl
             ]);
         } catch (Exception $e) {
             return response()->json([
