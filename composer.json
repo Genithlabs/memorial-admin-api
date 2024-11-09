@@ -8,6 +8,7 @@
         "php": "^8.0.2",
         "aws/aws-sdk-php": "^3.303",
         "aws/aws-sdk-php-laravel": "^3.8",
+        "cloudinary/cloudinary_php": "^2",
         "doctrine/dbal": "^3.7",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.19",
