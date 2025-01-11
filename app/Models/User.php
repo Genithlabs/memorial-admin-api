@@ -66,4 +66,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->where('user_id', $userid)->first();
     }
+
+    public function purchaseRequests()
+    {
+        return $this->hasOne(PurchaseRequest::class, 'user_id', 'id');
+    }
 }
