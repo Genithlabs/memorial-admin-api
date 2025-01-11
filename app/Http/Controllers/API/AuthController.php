@@ -102,7 +102,21 @@ class AuthController extends Controller
         ]);
 
         if ($response->getStatusCode() == 200) {
-            return json_decode((string) $response->getBody(), true);
+            $tokenData = json_decode((string) $response->getBody(), true);
+
+            $user = User::with('purchaseRequests')->where('user_id', $data['user_id'])->first();
+            $isPurchaseRequest = $user ? true : false;
+
+            // 추가로 전달할 데이터
+            $additionalData = [
+                'is_purchase_request' => $isPurchaseRequest,
+                'id' => $user->id,
+                'user_id' => $user->user_id,
+                'user_name' => $user->user_name,
+                'email' => $user->email
+            ];
+
+            return response()->json(array_merge($tokenData, $additionalData));
         } else {
             return response()->json([
                 'code' => $response->getStatusCode(),
