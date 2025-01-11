@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\PasswordReset;
+use App\Models\PurchaseRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class AuthController extends Controller
 {
@@ -236,6 +239,55 @@ class AuthController extends Controller
             return response()->json([
                 'result' => 'fail',
                 'message' => '비밀번호 변경에 실패하였습니다.['.$status.']'
+            ]);
+        }
+    }
+
+    public function requestPurchase(Request $request) {
+        $valid = validator($request->only('id', 'user_name', 'user_phone'), [
+            'id' => 'required',
+            'user_name' => 'required|string|max:50',
+            'user_phone' => 'required|max:255'
+        ]);
+        if ($valid->fails()) {
+            return response()->json([
+                'error' => $valid->errors()->all()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $data = request()->only('id', 'user_name', 'user_phone');
+
+        $user = User::with('purchaseRequests')->where('id', $data['id'])->first();
+
+        if ($user->purchaseRequests) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '이미 구매 요청을 완료하였습니다.'
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $updateColumn['user_phone'] = $data['user_phone'];
+            User::where('id', $data['id'])->update($updateColumn);
+
+            $purchaseRequest = new PurchaseRequest();
+            $purchaseRequest->user_id = $data['id'];
+            $purchaseRequest->save();
+
+            DB::commit();
+
+            return response()->json([
+                'result' => 'success',
+                'message' => '구매 요청이 완료되었습니다.'
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'result' => 'fail',
+                'message' => '구매 요청이 실패하였습니다. ['.$e->getMessage().']'
             ]);
         }
     }
