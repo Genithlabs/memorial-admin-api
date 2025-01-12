@@ -24,6 +24,10 @@ Route::prefix('/user')->group(function() {
     Route::post('findId', [AuthController::class, 'findId'])->name('user.findId');
     Route::post('forgot_password', [AuthController::class, 'forgotPassword'])->name('user.forgetPassword');
     Route::post('reset_password', [AuthController::class, 'resetPassword'])->name('user.resetPassword');
+
+    Route::middleware('auth:api')->group(function() {
+        Route::post('request_purchase', [AuthController::class, 'requestPurchase'])->name('user.requestPurchase');
+    });
 });
 
 Route::middleware('auth:api')->prefix('memorial')->name('memorial.')->group(function() {
