@@ -45,4 +45,5 @@ Route::middleware('auth:api')->prefix('memorial')->name('memorial.')->group(func
 
     Route::post('{id}/comment/register', [CommentController::class, 'register'])->name('comment.register');
     Route::post('{id}/story/register', [StoryController::class, 'register'])->name('story.register');
+    Route::post('{id}/story/delete', [StoryController::class, 'delete'])->name('story.delete');
 });
