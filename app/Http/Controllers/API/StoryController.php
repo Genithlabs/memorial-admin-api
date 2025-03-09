@@ -48,12 +48,12 @@ class StoryController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'message' => 'required',
-            'attachment' => 'sometimes|max:102400'
+            'attachment' => 'sometimes|max:10240'
         ], [
             'title.required' => '제목을 입력해 주세요',
             'title.max' => '제목은 255자 이내로 입력해 주세요',
             'message.required' => '스토리를 입력해 주세요',
-            'attachment.max' => '첨부파일은 100Mb 이하여야 합니다'
+            'attachment.max' => '첨부파일은 10Mb 이하여야 합니다'
         ]);
 
         if ($validator->fails()) {

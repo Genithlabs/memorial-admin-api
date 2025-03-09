@@ -45,7 +45,7 @@ class MemorialController extends Controller
             'user_name' => 'required|max:50',
             'birth_start' => 'required|sometimes|date_format:Y-m-d',
             'profile' => 'required|mimes:jpeg,jpg,png|max:10240',
-            'bgm' => 'sometimes|mimes:mp3,mp4,mpa,m4a|max:102400',
+            'bgm' => 'sometimes|mimes:mp3,mp4,mpa,m4a|max:10240',
         ], [
             'user_name.required' => '기념인 이름을 입력해 주세요',
             'user_name.max' => '기념인 이름은 50자 이내로 입력해 주세요',
@@ -54,7 +54,7 @@ class MemorialController extends Controller
             'profile.mimes' => '기념인 프로필 사진은 jpg/jpeg/png 형식이여야 합니다',
             'profile.max' => '기념인 프로필 사진은 10Mb 이하여야 합니다',
             'bgm.mimes' => '기념관 배경 음악은 mp3, mp4, mpa, m4a 형식이여야 합니다',
-            'bgm.max' => '기념관 배경 음악은 100Mb 이하여야 합니다'
+            'bgm.max' => '기념관 배경 음악은 10Mb 이하여야 합니다'
         ]);
 
         if ($validator->fails()) {
@@ -226,7 +226,7 @@ class MemorialController extends Controller
             'user_name' => 'required|max:50',
             'birth_start' => 'required|sometimes|date_format:Y-m-d',
             'profile' => 'sometimes|mimes:jpeg,jpg,png|max:10240',
-            'bgm' => 'sometimes|mimes:mp3,mp4,mpa,m4a|max:102400',
+            'bgm' => 'sometimes|mimes:mp3,mp4,mpa,m4a|max:10240',
         ], [
             'user_name.required' => '기념인 이름을 입력해 주세요',
             'user_name.max' => '기념인 이름은 50자 이내로 입력해 주세요',
@@ -235,7 +235,7 @@ class MemorialController extends Controller
             'profile.mimes' => '기념인 프로필 사진은 jpg/jpeg/png 형식이여야 합니다',
             'profile.max' => '기념인 프로필 사진은 10Mb 이하여야 합니다',
             'bgm.mimes' => '기념관 배경 음악은 mp3, mp4, mpa, m4a 형식이여야 합니다',
-            'bgm.max' => '기념관 배경 음악은 100Mb 이하여야 합니다'
+            'bgm.max' => '기념관 배경 음악은 10Mb 이하여야 합니다'
         ]);
 
         if ($validator->fails()) {
