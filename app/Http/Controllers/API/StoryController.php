@@ -163,4 +163,65 @@ class StoryController extends Controller
             'data' => $storyList
         ]);
     }
+
+    public function delete(Request $request, $memorialId) {
+        // 유효성 체크
+        // 1. 기념관 ID 존재 유무 체크
+        if (is_null($memorialId)) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '기념관 ID가 없습니다.'
+            ]);
+        }
+
+        // 2. 스토리 ID 존재 유무 체크
+        $validator = Validator::make($request->all(), [
+            'story_id' => 'required'
+        ], [
+            'story_id.required' => '삭제할 스토리 ID가 없습니다.'
+        ]);
+
+        $data = request()->only('story_id');
+
+        // 3. 삭제하려는 스토리가 존재하는지 체크함
+        $story = Story::with('attachment')
+            ->join('mm_users as user', 'mm_stories.user_id', 'user.id')
+            ->select('mm_stories.id', 'mm_stories.user_id', 'user.user_name', 'mm_stories.memorial_id', 'mm_stories.title', 'mm_stories.message', 'mm_stories.attachment_id', 'mm_stories.is_visible', 'mm_stories.created_at', 'mm_stories.updated_at')
+            ->where('user.id', auth()->user()->id)
+            ->where('mm_stories.memorial_id', $memorialId)
+            ->where('mm_stories.id', $data['story_id'])
+            ->first();
+
+        if (is_null($story)) {
+            return response()->json([
+                'result' => 'fail',
+                'message' => '스토리 삭제 권한이 없습니다.'
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $fileInfo = pathinfo($story->attachment->file_name);
+            $publicId = $fileInfo['filename'];
+            $assetExistResponse = $this->cloudinary->adminApi()->assetsByIds($publicId);
+            if (!empty($assetExistResponse['resources'])) {
+                $assetDeleteResponse = $this->cloudinary->adminApi()->deleteAssets($publicId);
+            }
+            $story->attachment->delete();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'result' => 'fail',
+                'message' => '스토리 삭제에 실패하였습니다. ['.$e->getMessage().']'
+            ]);
+        }
+
+        return response()->json([
+            'result' => 'success',
+            'message' => '스토리가 삭제되었습니다.'
+        ]);
+    }
 }
