@@ -184,8 +184,7 @@ class StoryController extends Controller
         $data = request()->only('story_id');
 
         // 3. 삭제하려는 스토리가 존재하는지 체크함
-        $story = Story::with('attachment')
-            ->join('mm_users as user', 'mm_stories.user_id', 'user.id')
+        $story = Story::join('mm_users as user', 'mm_stories.user_id', 'user.id')
             ->select('mm_stories.id', 'mm_stories.user_id', 'user.user_name', 'mm_stories.memorial_id', 'mm_stories.title', 'mm_stories.message', 'mm_stories.attachment_id', 'mm_stories.is_visible', 'mm_stories.created_at', 'mm_stories.updated_at')
             ->where('user.id', auth()->user()->id)
             ->where('mm_stories.memorial_id', $memorialId)
@@ -199,16 +198,26 @@ class StoryController extends Controller
             ]);
         }
 
+        $attachment = null;
+        if (!is_null($story->attachment_id)) {
+            $attachment = Attachment::where('id', $story->attachment_id);
+        }
+
         try {
             DB::beginTransaction();
 
-            $fileInfo = pathinfo($story->attachment->file_name);
-            $publicId = $fileInfo['filename'];
-            $assetExistResponse = $this->cloudinary->adminApi()->assetsByIds($publicId);
-            if (!empty($assetExistResponse['resources'])) {
-                $assetDeleteResponse = $this->cloudinary->adminApi()->deleteAssets($publicId);
+            if (!is_null($attachment)) {
+                $fileInfo = pathinfo($story->attachment->file_name);
+                $publicId = $fileInfo['filename'];
+                $assetExistResponse = $this->cloudinary->adminApi()->assetsByIds($publicId);
+                if (!empty($assetExistResponse['resources'])) {
+                    $assetDeleteResponse = $this->cloudinary->adminApi()->deleteAssets($publicId);
+                }
+                $story->attachment->delete();
             }
-            $story->attachment->delete();
+
+            $story->delete();
+
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
