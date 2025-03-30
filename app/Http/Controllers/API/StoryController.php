@@ -89,7 +89,7 @@ class StoryController extends Controller
                 } elseif (str_starts_with($mimeType, 'video/')) {
                     $resourceType = "video";
                 } elseif (str_starts_with($mimeType, 'audio/')) {  // audio 파일 추가
-                    $resourceType = "audio";
+                    $resourceType = "video";
                 } else {
                     throw new Exception("지원하지 않은 파일타입입니다.: " . $mimeType);
                 }
