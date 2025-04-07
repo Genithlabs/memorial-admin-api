@@ -107,8 +107,9 @@ class AuthController extends Controller
         if ($response->getStatusCode() == 200) {
             $tokenData = json_decode((string) $response->getBody(), true);
 
-            $user = User::with('purchaseRequests')->where('user_id', $data['user_id'])->first();
-            $isPurchaseRequest = $user ? true : false;
+            $user = User::where('user_id', $data['user_id'])->first();
+            $purchaseRequest = PurchaseRequest::where('user_id', $user->id)->first();
+            $isPurchaseRequest = $purchaseRequest ? true : false;
 
             // 추가로 전달할 데이터
             $additionalData = [
@@ -244,8 +245,8 @@ class AuthController extends Controller
     }
 
     public function requestPurchase(Request $request) {
-        $valid = validator($request->only('id', 'user_name', 'user_phone'), [
-            'id' => 'required',
+        $valid = validator($request->only('user_id', 'user_name', 'user_phone'), [
+            'user_id' => 'required',
             'user_name' => 'required|string|max:50',
             'user_phone' => 'required|max:255'
         ]);
@@ -255,11 +256,11 @@ class AuthController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $data = request()->only('id', 'user_name', 'user_phone');
+        $data = request()->only('user_id', 'user_name', 'user_phone');
 
-        $user = User::with('purchaseRequests')->where('id', $data['id'])->first();
+        $purchaseRequest = PurchaseRequest::where('user_id', $data['user_id'])->first();
 
-        if ($user->purchaseRequests) {
+        if ($purchaseRequest) {
             return response()->json([
                 'result' => 'fail',
                 'message' => '이미 구매 요청을 완료하였습니다.'
@@ -270,10 +271,10 @@ class AuthController extends Controller
             DB::beginTransaction();
 
             $updateColumn['user_phone'] = $data['user_phone'];
-            User::where('id', $data['id'])->update($updateColumn);
+            User::where('id', $data['user_id'])->update($updateColumn);
 
             $purchaseRequest = new PurchaseRequest();
-            $purchaseRequest->user_id = $data['id'];
+            $purchaseRequest->user_id = $data['user_id'];
             $purchaseRequest->save();
 
             DB::commit();
