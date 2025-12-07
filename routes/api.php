@@ -6,6 +6,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CommentController;
 use App\Http\Controllers\API\MemorialController;
 use App\Http\Controllers\API\StoryController;
+use App\Http\Controllers\API\ChatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,8 @@ Route::prefix('/user')->group(function() {
         Route::post('request_purchase', [AuthController::class, 'requestPurchase'])->name('user.requestPurchase');
     });
 });
+
+Route::get('/chat/questions', [ChatController::class, 'getQuestions'])->name('chat.questions');
 
 Route::middleware('auth:api')->prefix('memorial')->name('memorial.')->group(function() {
     Route::post('/register', [MemorialController::class, 'register'])->name('register');
