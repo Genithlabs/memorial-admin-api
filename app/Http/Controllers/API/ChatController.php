@@ -132,12 +132,13 @@ class ChatController extends Controller
         $data = [
             'user_name' => $request->input('name'),
             'birth_start' => $birthStartDate,
-            'career' => $request->input('prompts'),
+            'prompts' => $request->input('prompts'), // AI 생성을 위한 프롬프트
+            'use_ai' => true, // AI 자동 생성 사용
             'profile' => $request->file('profile'),
             'bgm' => null, // Chat 플로우에서는 BGM 없음
         ];
 
-        // MemorialService를 통해 기념관 생성
+        // MemorialService를 통해 기념관 생성 (AI로 자동 생성)
         $result = $this->memorialService->createMemorial($data, Auth::user()->id);
 
         if ($result['success']) {
