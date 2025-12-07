@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Attachment;
 use App\Models\Memorial;
+use App\Services\MemorialService;
 use Cloudinary\Cloudinary;
 use Exception;
 use Illuminate\Http\Request;
@@ -21,19 +22,21 @@ class MemorialController extends Controller
     private $S3_URL;
 
     protected $cloudinary;
+    protected $memorialService;
 
-    public function __construct(Cloudinary $cloudinary) {
+    public function __construct(Cloudinary $cloudinary, MemorialService $memorialService) {
         $this->S3_PATH_PROFILE = "/memorial/profile/";
         $this->S3_PATH_BGM = "/memorial/bgm/";
         $this->S3_PATH_CAREER_CONTENT_FILE = "/memorial/career/";
         $this->S3_URL = "https://foot-print-resources.s3.ap-northeast-2.amazonaws.com";
 
         $this->cloudinary = $cloudinary;
+        $this->memorialService = $memorialService;
     }
 
     public function register(Request $request) {
         // 유효성 체크
-        $memorial = Memorial::where('user_id', Auth::user()->id)->first();
+        $memorial = $this->memorialService->checkExistingMemorial(Auth::user()->id);
         if (!is_null($memorial)) {
             return response()->json([
                 'result' => 'fail',
@@ -64,96 +67,29 @@ class MemorialController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $data = request()->only('user_name', 'birth_start', 'birth_end', 'career', 'profile', 'bgm');
+        $data = [
+            'user_name' => $request->input('user_name'),
+            'birth_start' => $request->input('birth_start'),
+            'birth_end' => $request->input('birth_end'),
+            'career' => $request->input('career'),
+            'profile' => $request->file('profile'),
+            'bgm' => $request->file('bgm'),
+        ];
 
-        try {
-            DB::beginTransaction();
+        $result = $this->memorialService->createMemorial($data, Auth::user()->id);
 
-            $id = Auth::user()->id;
-
-            $memorial = new Memorial();
-            $memorial->user_id = $id;
-            $memorial->name = $data['user_name'];
-            $memorial->birth_start = $data['birth_start'];
-            if (isset($data['birth_end'])) {
-                $memorial->birth_end = $data['birth_end'];
-            }
-            $memorial->career_contents = $data['career'];
-            $memorial->save();
-
-            // 프로필 이미지 업로드
-            $profile_url = $request->file('profile');
-            $file = $request->file('profile')->getClientOriginalName();
-            $extension = pathinfo($file, PATHINFO_EXTENSION);
-            $lowerExtentsion = strtolower($extension);
-            $fileName = $memorial->id."_profile";
-
-            $profileUploadResponse = $this->cloudinary->uploadApi()->upload($profile_url->getRealPath(), $options = [
-                'public_id' => $fileName,
-                'asset_folder' => $this->S3_PATH_PROFILE,
-                'resource_type' => "image",
-                'use_filename' => true, // 원본 파일명을 public_id 로 사용함
-            ]);
-
-            $publicId = $profileUploadResponse['public_id'];
-            $version = $profileUploadResponse['version'];
-
-            $filePath = "/".env('CLOUDINARY_NAME')."/image/upload/v".$version."/";
-            $fileName = $publicId.".".$lowerExtentsion;
-
-            $profileAttachment = new Attachment();
-            $profileAttachment->file_path = $filePath;
-            $profileAttachment->file_name = $fileName;
-            $profileAttachment->save();
-
-            $memorial->profile_attachment_id = $profileAttachment->id;
-            $memorial->save();
-
-            // BGM 업로드
-            $bgm_url = $request->file('bgm');
-            if ($bgm_url) {
-                $file = $request->file('bgm')->getClientOriginalName();
-                $extension = pathinfo($file, PATHINFO_EXTENSION);
-                $lowerExtentsion = strtolower($extension);
-                $fileName = $memorial->id."_bgm";
-
-                $bgmUploadResponse = $this->cloudinary->uploadApi()->upload($bgm_url->getRealPath(), $options = [
-                    'public_id' => $fileName,
-                    'asset_folder' => $this->S3_PATH_BGM,
-                    'resource_type' => "video",
-                    'use_filename' => true, // 원본 파일명을 public_id 로 사용함
-                ]);
-
-                $publicId = $bgmUploadResponse['public_id'];
-                $version = $bgmUploadResponse['version'];
-
-                $filePath = "/".env('CLOUDINARY_NAME')."/video/upload/v".$version."/";
-                $fileName = $publicId.".".$lowerExtentsion;
-
-                $bgmAttachment = new Attachment();
-                $bgmAttachment->file_path = $filePath;
-                $bgmAttachment->file_name = $fileName;
-                $bgmAttachment->save();
-
-                $memorial->bgm_attachment_id = $bgmAttachment->id;
-                $memorial->save();
-            }
-
-            DB::commit();
-
+        if ($result['success']) {
             return response()->json([
                 'result' => 'success',
-                'message' => '기념관 생성에 성공하였습니다.',
+                'message' => $result['message'],
                 'data' => [
-                    'id' => $memorial->id
+                    'id' => $result['memorial']->id
                 ]
             ]);
-        } catch (Exception $e) {
-            DB::rollBack();
-
+        } else {
             return response()->json([
                 'result' => 'fail',
-                'message' => '기념관 생성에 실패하였습니다. ['.$e->getMessage().']'
+                'message' => $result['message']
             ]);
         }
     }

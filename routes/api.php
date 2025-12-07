@@ -33,6 +33,10 @@ Route::prefix('/user')->group(function() {
 
 Route::get('/chat/questions', [ChatController::class, 'getQuestions'])->name('chat.questions');
 
+Route::middleware('auth:api')->prefix('chat')->name('chat.')->group(function() {
+    Route::post('/submit', [ChatController::class, 'submit'])->name('submit');
+});
+
 Route::middleware('auth:api')->prefix('memorial')->name('memorial.')->group(function() {
     Route::post('/register', [MemorialController::class, 'register'])->name('register');
     Route::post('/upload', [MemorialController::class, 'upload'])->name('upload');
