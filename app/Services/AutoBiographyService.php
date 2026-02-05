@@ -3,25 +3,20 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
-use Google\Auth\Credentials\ServiceAccountCredentials;
 
 class AutoBiographyService
 {
     protected $client;
-    protected $endpoint;
-    protected $projectId;
 
     public function __construct()
     {
-        $this->projectId = env('GCP_PROJECT_ID');
-        $this->endpoint = $this->endpoint = "https://us-central1-aiplatform.googleapis.com/v1/projects/{$this->projectId}/locations/us-central1/publishers/google/models/gemini-1.5-flash:generateContent";
         $this->client = new Client();
     }
 
     public function generateFromPrompt(string $prompt): string
     {
-        $apiKey = env('GOOGLE_GEMINI_API_KEY'); // .env에 API 키 저장
-        $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+        $apiKey = env('GOOGLE_GEMINI_API_KEY');
+        $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
 
         $response = $this->client->post($endpoint, [
             'headers' => [
@@ -62,17 +57,4 @@ class AutoBiographyService
         EOT;
     }
 
-    protected function getAccessToken(): string
-    {
-        $jsonKeyPath = base_path(env('GOOGLE_APPLICATION_CREDENTIALS'));
-
-        $scopes = ['https://www.googleapis.com/auth/cloud-platform'];
-        $creds = new ServiceAccountCredentials($scopes, $jsonKeyPath);
-        $token = $creds->fetchAuthToken();
-
-        if (!isset($token['access_token'])) {
-            throw new \Exception('Access token could not be retrieved.');
-        }
-        return $token['access_token'];
-    }
 }
