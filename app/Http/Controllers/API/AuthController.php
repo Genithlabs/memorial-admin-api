@@ -24,7 +24,7 @@ class AuthController extends Controller
     {
         // 유효성 체크
         $valid = validator($request->only('user_id', 'email', 'user_name', 'user_password'), [
-            'user_id' => 'required|string|max:50|unique:mm_users',
+            'user_id' => 'required|string|min:6|max:50|unique:mm_users',
             'email' => 'required|string|email|max:100|unique:mm_users',
             'user_name' => 'required|string|max:50',
             'user_password' => 'required|string|min:6|max:255'
@@ -57,7 +57,17 @@ class AuthController extends Controller
         ]);
 
         if ($response->getStatusCode() == 200) {
-            return json_decode((string) $response->getBody(), true);
+            $tokenData = json_decode((string) $response->getBody(), true);
+
+            $additionalData = [
+                'id' => $user->id,
+                'user_id' => $user->user_id,
+                'user_name' => $user->user_name,
+                'email' => $user->email,
+                'is_purchase_request' => false,
+            ];
+
+            return response()->json(array_merge($tokenData, $additionalData));
         } else {
             return response()->json([
                 'code' => $response->getStatusCode(),
