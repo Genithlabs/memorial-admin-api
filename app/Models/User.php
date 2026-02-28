@@ -25,7 +25,18 @@ class User extends Authenticatable implements MustVerifyEmail
         'user_name',
         'email',
         'user_password',
+        'is_admin',
     ];
+
+    public function isAdmin(): bool
+    {
+        return (bool) $this->is_admin;
+    }
+
+    public function memorial()
+    {
+        return $this->hasOne(Memorial::class, 'user_id', 'id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -69,6 +80,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function purchaseRequests()
     {
-        return $this->hasOne(PurchaseRequest::class, 'user_id', 'id');
+        return $this->hasMany(PurchaseRequest::class, 'user_id', 'id');
     }
 }

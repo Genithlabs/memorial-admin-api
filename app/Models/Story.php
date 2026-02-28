@@ -14,4 +14,8 @@ class Story extends Model
     public function attachment() {
         return $this->hasOne(Attachment::class, 'id', 'attachment_id')->where('is_delete', 0);
     }
+
+    public function user() {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }

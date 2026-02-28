@@ -11,4 +11,8 @@ class VisitorComment extends Model
 
     protected $table = "mm_visitor_comments";
     public $timestamps = true;
+
+    public function user() {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }
