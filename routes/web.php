@@ -12,7 +12,11 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect('/login');
+    if (request()->getHost() === 'admin.yourmemorial.kr') {
+        return redirect('/login');
+    }
+
+    abort(403);
 });
 
 // Admin Routes
