@@ -13,12 +13,20 @@ class PurchaseRequest extends Model
 
     protected $fillable = [
         'id',
-        'user_id'
+        'user_id',
+        'status',
+        'admin_memo',
+        'processed_at',
+        'processed_by',
     ];
 
-        // User와의 관계 정의
     public function user()
     {
-        return $this->belongsTo(User::class, 'id', 'user_id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function processor()
+    {
+        return $this->belongsTo(User::class, 'processed_by', 'id');
     }
 }
